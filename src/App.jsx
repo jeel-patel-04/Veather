@@ -1,12 +1,15 @@
 import './App.css'
+import { BrowserRouter } from 'react-router-dom'
 import { Button } from './components/ui/button'
 
 function App() {
 
   return (
     <>
-      <div>Hey Zaalima</div>
-      <Button>Click Me</Button>
+      <BrowserRouter>
+      
+      </BrowserRouter>
+      
     </>
   )
 }
