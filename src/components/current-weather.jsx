@@ -2,23 +2,45 @@ import { Card, CardContent } from "./ui/card";
 import { ArrowDown, ArrowUp, Droplets, Wind } from "lucide-react";
 import React from "react";
 
-const CurrentWeather = ({ weatherData, locationName }) => {
-  if (!weatherData) return null;
+const CurrentWeather = ({ data, forecastData, locationName }) => {
+  if (!data) return null;
 
   const {
     weather: [currentWeather],
-    main: { temp, feels_like, temp_min, temp_max, humidity },
+    main: { temp, feels_like, humidity },
     wind: { speed },
-    name: cityName, // <-- REAL CITY NAME (Ahmedabad, Mehsana etc.)
-  } = weatherData;
+    name: cityName,
+  } = data;
 
   const formatTemp = (value) => `${Math.round(value)}°`;
+
+  // --------------------------
+  // ✅ Calculate today's Min/Max from forecast
+  // --------------------------
+  let todayMin = null;
+  let todayMax = null;
+
+  if (forecastData?.list) {
+    const today = new Date().getDate();
+
+    const todayReadings = forecastData.list.filter((item) => {
+      return new Date(item.dt * 1000).getDate() === today;
+    });
+
+    if (todayReadings.length > 0) {
+      todayMin = Math.min(...todayReadings.map((item) => item.main.temp_min));
+      todayMax = Math.max(...todayReadings.map((item) => item.main.temp_max));
+    }
+  }
+
+  // Convert m/s → km/h
+  const windKmph = (speed * 3.6).toFixed(1);
 
   return (
     <Card className="overflow-hidden">
       <CardContent className="p-6">
         <div className="grid gap-6 md:grid-cols-2">
-          
+
           {/* LEFT SIDE */}
           <div className="space-y-4">
 
@@ -26,10 +48,11 @@ const CurrentWeather = ({ weatherData, locationName }) => {
             <div className="space-y-2">
               <div className="flex items-center">
                 <h2 className="text-2xl font-bold tracking-tight">
-                  {cityName}   {/* Always city */}
+                  {locationName?.name || cityName}
                 </h2>
+
                 {locationName?.state && (
-                  <span className="text-muted-foreground">
+                  <span className="text-muted-foreground ml-2">
                     , {locationName.state}
                   </span>
                 )}
@@ -45,22 +68,22 @@ const CurrentWeather = ({ weatherData, locationName }) => {
               <p className="text-7xl font-bold tracking-tighter">
                 {formatTemp(temp)}
               </p>
+
               <div className="space-y-1">
                 <p className="text-sm font-medium text-muted-foreground">
                   Feels like {formatTemp(feels_like)}
                 </p>
-                <div className="flex gap-2 text-sm font-medium">
 
+                <div className="flex gap-2 text-sm font-medium">
                   <span className="flex items-center gap-1 text-blue-500">
                     <ArrowDown className="h-3 w-3" />
-                    {formatTemp(temp_min)}
+                    {todayMin !== null ? formatTemp(todayMin) : "--"}
                   </span>
 
                   <span className="flex items-center gap-1 text-red-500">
                     <ArrowUp className="h-3 w-3" />
-                    {formatTemp(temp_max)}
+                    {todayMax !== null ? formatTemp(todayMax) : "--"}
                   </span>
-
                 </div>
               </div>
             </div>
@@ -80,7 +103,9 @@ const CurrentWeather = ({ weatherData, locationName }) => {
                 <Wind className="h-4 w-4 text-blue-500" />
                 <div className="space-y-0.5">
                   <p className="text-sm font-medium">Wind Speed</p>
-                  <p className="text-sm text-muted-foreground">{speed} m/s</p>
+                  <p className="text-sm text-muted-foreground">
+                    {windKmph} km/h
+                  </p>
                 </div>
               </div>
 
@@ -91,19 +116,16 @@ const CurrentWeather = ({ weatherData, locationName }) => {
           {/* RIGHT SIDE - Weather Icon */}
           <div className="flex flex-col items-center justify-center">
             <div className="relative flex aspect-square w-full max-w-[200px] items-center justify-center">
-              
               <img
                 src={`https://openweathermap.org/img/wn/${currentWeather.icon}@4x.png`}
                 alt={currentWeather.description}
                 className="h-full w-full object-contain"
               />
-
               <div className="absolute bottom-0 text-center">
                 <p className="text-sm font-medium capitalize">
                   {currentWeather.description}
                 </p>
               </div>
-
             </div>
           </div>
 
