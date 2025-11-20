@@ -41,7 +41,8 @@ function CitySearch() {
       country,
     });
 
-    setOpen(false);
+    setQuery("");      // 🔥 FIX 1: CLEAR SEARCH BOX
+    setOpen(false);    // close popup
     navigate(`/city/${name}?lat=${lat}&lon=${lon}`);
   };
 
@@ -50,13 +51,22 @@ function CitySearch() {
       <Button
         variant="outline"
         className="relative w-full justify-start text-sm text-muted-foreground sm:pr-12 md:w-40 lg:w-64"
-        onClick={() => setOpen(true)}
+        onClick={() => {
+          setQuery("");   // 🔥 FIX 2: RESET WHEN OPENING SEARCH
+          setOpen(true);
+        }}
       >
         <Search className="mr-2 h-4 w-4" />
         Search cities...
       </Button>
 
-      <CommandDialog open={open} onOpenChange={setOpen}>
+      <CommandDialog
+        open={open}
+        onOpenChange={(state) => {
+          setOpen(state);
+          if (!state) setQuery("");   // 🔥 FIX 3: RESET WHEN CLOSING
+        }}
+      >
         <Command>
           <CommandInput
             placeholder="Search cities..."
@@ -80,11 +90,13 @@ function CitySearch() {
                   >
                     <Star className="mr-2 h-4 w-4 text-yellow-500" />
                     <span>{city.name}</span>
+
                     {city.state && (
                       <span className="text-sm text-muted-foreground">
                         , {city.state}
                       </span>
                     )}
+
                     <span className="text-sm text-muted-foreground">
                       , {city.country}
                     </span>
