@@ -3,7 +3,7 @@ import Header from "./header";
 
 const Layout = ({ children }) => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-muted">
+    <div className="min-h-screen bg-linear-to-br from-background to-muted">
       {/* Header */}
       <Header />
 
